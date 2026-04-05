@@ -4,6 +4,7 @@
 
 Base URL
 http://localhost:5000/api
+https://finance-backend-api-n3ir.onrender.com
 
 ================================================================================
 🔐 AUTHENTICATION APIs (3 ENDPOINTS)
