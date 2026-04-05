@@ -4,6 +4,7 @@
 ## Setup
 
 **Base URL:** `http://localhost:5000/api`
+**deployed URL:**  https://finance-backend-api-n3ir.onrender.com
 
 **Before testing:**
 1. Start MongoDB: `brew services start mongodb-community` (macOS)
