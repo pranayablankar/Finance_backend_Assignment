@@ -1,0 +1,812 @@
+================================================================================
+                    FINANCE BACKEND - API DOCUMENTATION
+================================================================================
+
+Base URL
+http://localhost:5000/api
+
+================================================================================
+🔐 AUTHENTICATION APIs (3 ENDPOINTS)
+================================================================================
+
+✅ 1. REGISTER USER
+
+Endpoint: POST /auth/register
+Description: Create a new user account
+
+Request Body (JSON):
+{
+  "name": "John Analyst",
+  "email": "analyst@example.com",
+  "password": "password123",
+  "role": "analyst"
+}
+
+Response (Success - 201):
+{
+  "message": "User registered successfully",
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Analyst",
+    "email": "analyst@example.com",
+    "role": "analyst",
+    "isActive": true,
+    "createdAt": "2026-04-03T10:30:00Z"
+  }
+}
+
+Available Roles: viewer, analyst, admin
+
+Note: Use this to create test accounts for different roles
+
+---
+
+✅ 2. LOGIN USER
+
+Endpoint: POST /auth/login
+Description: Login and get JWT token for authentication
+
+Request Body (JSON):
+{
+  "email": "analyst@example.com",
+  "password": "password123"
+}
+
+Response (Success - 200):
+{
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Analyst",
+    "email": "analyst@example.com",
+    "role": "analyst"
+  }
+}
+
+👉 IMPORTANT: Copy the token and use in Authorization header for all protected endpoints:
+Header: Authorization: Bearer YOUR_TOKEN
+
+Test Credentials Ready:
+- Viewer:  viewer@example.com / password123
+- Analyst: analyst@example.com / password123
+- Admin:   admin@example.com / password123
+
+---
+
+✅ 3. GET CURRENT USER
+
+Endpoint: GET /auth/me
+Description: Get logged-in user information
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Analyst",
+    "email": "analyst@example.com",
+    "role": "analyst",
+    "isActive": true,
+    "createdAt": "2026-04-03T10:30:00Z"
+  }
+}
+
+================================================================================
+👤 USER MANAGEMENT APIs (3 ENDPOINTS - Admin Only)
+================================================================================
+
+✅ 4. GET ALL USERS
+
+Endpoint: GET /users
+Description: Get list of all users (Admin only)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "users": [
+    {
+      "_id": "507f1f77bcf86cd799439011",
+      "name": "John Analyst",
+      "email": "analyst@example.com",
+      "role": "analyst",
+      "isActive": true,
+      "createdAt": "2026-04-03T10:30:00Z"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439012",
+      "name": "Sarah Viewer",
+      "email": "viewer@example.com",
+      "role": "viewer",
+      "isActive": true,
+      "createdAt": "2026-04-02T08:15:00Z"
+    }
+  ]
+}
+
+Access: Admin only - Viewer/Analyst will get 403 Forbidden
+
+---
+
+✅ 5. GET USER BY ID
+
+Endpoint: GET /users/:id
+Description: Get details of a specific user (Admin only)
+
+Parameters:
+:id = User ID (e.g., 507f1f77bcf86cd799439011)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Analyst",
+    "email": "analyst@example.com",
+    "role": "analyst",
+    "isActive": true,
+    "createdAt": "2026-04-03T10:30:00Z"
+  }
+}
+
+---
+
+✅ 6. UPDATE USER
+
+Endpoint: PUT /users/:id
+Description: Update user information (Admin only)
+
+Parameters:
+:id = User ID (e.g., 507f1f77bcf86cd799439011)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Request Body (JSON):
+{
+  "isActive": false
+}
+
+Or update other fields:
+{
+  "name": "Updated Name",
+  "role": "viewer"
+}
+
+Response (Success - 200):
+{
+  "message": "User updated successfully",
+  "user": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "John Analyst",
+    "email": "analyst@example.com",
+    "role": "analyst",
+    "isActive": false
+  }
+}
+
+================================================================================
+💰 FINANCIAL RECORDS APIs (5 ENDPOINTS)
+================================================================================
+
+✅ 7. CREATE FINANCIAL RECORD
+
+Endpoint: POST /records
+Description: Create a new financial record (Analyst/Admin only)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Request Body (JSON):
+{
+  "amount": 5000,
+  "type": "income",
+  "category": "salary",
+  "date": "2026-04-01",
+  "note": "Monthly salary"
+}
+
+Valid Types: income, expense
+Valid Categories: salary, freelance, bonus, investment, food, transportation, utilities, entertainment, healthcare, shopping, other
+
+Response (Success - 201):
+{
+  "message": "Record created successfully",
+  "record": {
+    "_id": "507f1f77bcf86cd799439013",
+    "amount": 5000,
+    "type": "income",
+    "category": "salary",
+    "date": "2026-04-01T00:00:00Z",
+    "note": "Monthly salary",
+    "createdBy": "507f1f77bcf86cd799439011",
+    "isDeleted": false,
+    "createdAt": "2026-04-03T10:30:00Z",
+    "updatedAt": "2026-04-03T10:30:00Z"
+  }
+}
+
+Access: Analyst and Admin - Viewer will get 403 Forbidden
+
+---
+
+✅ 8. GET ALL RECORDS
+
+Endpoint: GET /records
+Description: Get all financial records with filtering and pagination
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Query Parameters (Optional):
+- type=income|expense
+- category=salary|food|etc
+- startDate=YYYY-MM-DD
+- endDate=YYYY-MM-DD
+- page=1
+- limit=10
+
+Examples:
+GET /records
+GET /records?type=income
+GET /records?type=expense&category=food
+GET /records?startDate=2026-03-01&endDate=2026-04-30
+
+Response (Success - 200):
+{
+  "records": [
+    {
+      "_id": "507f1f77bcf86cd799439013",
+      "amount": 5000,
+      "type": "income",
+      "category": "salary",
+      "date": "2026-04-01T00:00:00Z",
+      "note": "Monthly salary",
+      "createdBy": "507f1f77bcf86cd799439011",
+      "isDeleted": false,
+      "createdAt": "2026-04-03T10:30:00Z"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439014",
+      "amount": 500,
+      "type": "expense",
+      "category": "food",
+      "date": "2026-04-02T00:00:00Z",
+      "note": "Grocery shopping",
+      "createdBy": "507f1f77bcf86cd799439011",
+      "isDeleted": false,
+      "createdAt": "2026-04-02T15:45:00Z"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "pages": 1
+}
+
+Access: All authenticated users see only their own records
+
+---
+
+✅ 9. GET RECORD BY ID
+
+Endpoint: GET /records/:id
+Description: Get a specific financial record
+
+Parameters:
+:id = Record ID (e.g., 507f1f77bcf86cd799439013)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "record": {
+    "_id": "507f1f77bcf86cd799439013",
+    "amount": 5000,
+    "type": "income",
+    "category": "salary",
+    "date": "2026-04-01T00:00:00Z",
+    "note": "Monthly salary",
+    "createdBy": "507f1f77bcf86cd799439011",
+    "isDeleted": false,
+    "createdAt": "2026-04-03T10:30:00Z",
+    "updatedAt": "2026-04-03T10:30:00Z"
+  }
+}
+
+---
+
+✅ 10. UPDATE RECORD
+
+Endpoint: PUT /records/:id
+Description: Update a financial record (Creator/Admin only)
+
+Parameters:
+:id = Record ID (e.g., 507f1f77bcf86cd799439013)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Request Body (JSON):
+{
+  "amount": 6000,
+  "category": "bonus"
+}
+
+Or update any fields:
+{
+  "amount": 5500,
+  "type": "income",
+  "category": "freelance",
+  "date": "2026-04-05",
+  "note": "Updated note"
+}
+
+Response (Success - 200):
+{
+  "message": "Record updated successfully",
+  "record": {
+    "_id": "507f1f77bcf86cd799439013",
+    "amount": 6000,
+    "type": "income",
+    "category": "bonus",
+    "date": "2026-04-01T00:00:00Z",
+    "note": "Monthly salary",
+    "createdBy": "507f1f77bcf86cd799439011",
+    "isDeleted": false,
+    "updatedAt": "2026-04-03T11:45:00Z"
+  }
+}
+
+---
+
+✅ 11. DELETE RECORD
+
+Endpoint: DELETE /records/:id
+Description: Delete a financial record (Creator/Admin only) - Soft delete
+
+Parameters:
+:id = Record ID (e.g., 507f1f77bcf86cd799439013)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "message": "Record deleted successfully"
+}
+
+Note: Uses soft delete - record marked as deleted but not removed from database
+
+================================================================================
+📊 DASHBOARD & ANALYTICS APIs (4 ENDPOINTS)
+================================================================================
+
+✅ 12. GET FINANCIAL SUMMARY
+
+Endpoint: GET /dashboard/summary
+Description: Get overall financial summary (income, expense, balance)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "summary": {
+    "totalIncome": 50000,
+    "totalExpense": 20000,
+    "netBalance": 30000,
+    "incomeCount": 12,
+    "expenseCount": 25,
+    "averageIncome": 4166.67,
+    "averageExpense": 800
+  }
+}
+
+---
+
+✅ 13. GET MONTHLY TRENDS
+
+Endpoint: GET /dashboard/trend
+Description: Get monthly income and expense trends
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Query Parameters (Optional):
+- months=3|6|12 (last N months, default 6)
+
+Response (Success - 200):
+{
+  "trends": [
+    {
+      "month": "February 2026",
+      "income": 15000,
+      "expense": 5000,
+      "balance": 10000
+    },
+    {
+      "month": "March 2026",
+      "income": 18000,
+      "expense": 7000,
+      "balance": 11000
+    },
+    {
+      "month": "April 2026",
+      "income": 17000,
+      "expense": 8000,
+      "balance": 9000
+    }
+  ]
+}
+
+---
+
+✅ 14. GET RECENT ACTIVITY
+
+Endpoint: GET /dashboard/activity
+Description: Get recent financial records (activity log)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Query Parameters (Optional):
+- limit=10 (number of recent records, default 10)
+
+Response (Success - 200):
+{
+  "activity": [
+    {
+      "_id": "507f1f77bcf86cd799439020",
+      "amount": 500,
+      "type": "expense",
+      "category": "food",
+      "date": "2026-04-03T10:30:00Z",
+      "note": "Grocery shopping",
+      "createdAt": "2026-04-03T10:30:00Z"
+    },
+    {
+      "_id": "507f1f77bcf86cd799439019",
+      "amount": 2500,
+      "type": "income",
+      "category": "freelance",
+      "date": "2026-04-02T15:45:00Z",
+      "note": "Freelance project",
+      "createdAt": "2026-04-02T15:45:00Z"
+    }
+  ]
+}
+
+---
+
+✅ 15. GET CATEGORY BREAKDOWN
+
+Endpoint: GET /dashboard/category
+Description: Get category-wise income/expense breakdown
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "categories": {
+    "income": [
+      {
+        "category": "salary",
+        "total": 40000,
+        "count": 3
+      },
+      {
+        "category": "freelance",
+        "total": 7500,
+        "count": 5
+      },
+      {
+        "category": "bonus",
+        "total": 2500,
+        "count": 1
+      }
+    ],
+    "expense": [
+      {
+        "category": "food",
+        "total": 8000,
+        "count": 12
+      },
+      {
+        "category": "utilities",
+        "total": 5000,
+        "count": 3
+      },
+      {
+        "category": "transportation",
+        "total": 4000,
+        "count": 8
+      }
+    ]
+  }
+}
+
+---
+
+✅ 16. GET FULL DASHBOARD
+
+Endpoint: GET /dashboard/full
+Description: Get complete dashboard data (summary + trends + activity)
+
+Headers Required:
+Authorization: Bearer YOUR_JWT_TOKEN
+
+Response (Success - 200):
+{
+  "summary": {
+    "totalIncome": 50000,
+    "totalExpense": 20000,
+    "netBalance": 30000
+  },
+  "trends": [
+    {
+      "month": "February 2026",
+      "income": 15000,
+      "expense": 5000,
+      "balance": 10000
+    },
+    {
+      "month": "March 2026",
+      "income": 18000,
+      "expense": 7000,
+      "balance": 11000
+    }
+  ],
+  "activity": [
+    {
+      "_id": "507f1f77bcf86cd799439020",
+      "amount": 500,
+      "type": "expense",
+      "category": "food",
+      "date": "2026-04-03T10:30:00Z",
+      "note": "Grocery shopping"
+    }
+  ],
+  "categories": {
+    "income": [
+      {
+        "category": "salary",
+        "total": 40000
+      }
+    ],
+    "expense": [
+      {
+        "category": "food",
+        "total": 8000
+      }
+    ]
+  }
+}
+
+================================================================================
+🔐 AUTHENTICATION & HEADERS
+================================================================================
+
+For ALL Protected Endpoints (marked with 🔒):
+
+Step 1: Login to get token
+POST /auth/login
+{
+  "email": "analyst@example.com",
+  "password": "password123"
+}
+
+Step 2: Copy token from response
+
+Step 3: Add to Headers for all other requests
+
+In Postman:
+- Go to Headers tab
+- Add: Authorization: Bearer YOUR_TOKEN
+
+Example:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwN2YxZjc3YmNmODZjZDc5OTQzOTAxMSIsImlhdCI6MTcxMzAyNDIwMCwiZXhwIjoxNzEzNjI5MDAwfQ.abc123...
+
+================================================================================
+⚠️ ROLE-BASED ACCESS CONTROL
+================================================================================
+
+VIEWER ROLE (viewer@example.com / password123)
+- GET /auth/me ✅
+- GET /records ✅ (own records only)
+- GET /records/:id ✅ (own records only)
+- GET /dashboard/summary ✅
+- GET /dashboard/trend ✅
+- GET /dashboard/activity ✅
+- POST /records ❌ (403 Forbidden)
+- PUT /records/:id ❌ (403 Forbidden)
+- DELETE /records/:id ❌ (403 Forbidden)
+- GET /users ❌ (403 Forbidden)
+
+ANALYST ROLE (analyst@example.com / password123)
+- GET /auth/me ✅
+- GET /records ✅ (own records only)
+- GET /records/:id ✅ (own records only)
+- POST /records ✅
+- PUT /records/:id ✅ (own records only)
+- DELETE /records/:id ✅ (own records only)
+- GET /dashboard/summary ✅
+- GET /dashboard/trend ✅
+- GET /dashboard/activity ✅
+- GET /users ❌ (403 Forbidden)
+
+ADMIN ROLE (admin@example.com / password123)
+- All endpoints ✅ (Full system access)
+- Can access all users' records
+- Can create/edit/delete any record
+- Can manage users
+- GET /users ✅
+- GET /users/:id ✅
+- PUT /users/:id ✅
+
+================================================================================
+🧪 SUGGESTED TEST FLOW
+================================================================================
+
+Follow this order to test all features:
+
+1. HEALTH CHECK
+   GET /health
+   (No authentication needed)
+
+2. REGISTER NEW USERS
+   POST /auth/register (create different roles)
+   OR use existing test accounts
+
+3. LOGIN WITH ANALYST
+   POST /auth/login
+   Body: {"email": "analyst@example.com", "password": "password123"}
+   Save token ← IMPORTANT
+
+4. CREATE RECORDS
+   POST /records
+   Add token to Authorization header
+   Create 3-5 records with different types/categories
+
+5. GET ALL RECORDS
+   GET /records
+   Verify all records appear
+
+6. FILTER RECORDS
+   GET /records?type=income
+   GET /records?category=food
+   GET /records?type=expense&category=utilities
+
+7. GET SPECIFIC RECORD
+   GET /records/{id}
+   Use ID from previous responses
+
+8. UPDATE RECORD
+   PUT /records/{id}
+   Change amount or category
+
+9. GET DASHBOARD SUMMARY
+   GET /dashboard/summary
+   Should show totals based on created records
+
+10. GET MONTHLY TRENDS
+    GET /dashboard/trend
+    Shows monthly breakdown
+
+11. GET ACTIVITY
+    GET /dashboard/activity
+    Shows recent records
+
+12. GET FULL DASHBOARD
+    GET /dashboard/full
+    Complete dashboard data
+
+13. TEST VIEWER ROLE
+    Login as viewer@example.com
+    Try POST /records ← Should fail (403)
+    Try GET /records ← Should work
+
+14. TEST ADMIN (Optional)
+    GET /users
+    GET /users/{id}
+    PUT /users/{id}
+
+15. DELETE RECORD (Optional)
+    DELETE /records/{id}
+    Verify it's soft deleted
+
+================================================================================
+💡 COMMON ERRORS & SOLUTIONS
+================================================================================
+
+Error: "Cannot GET /auth/login"
+Solution: Use POST method, not GET
+Example: POST /auth/login (not GET)
+
+Error: "401 Unauthorized"
+Solution: Add token to Authorization header
+Header: Authorization: Bearer YOUR_TOKEN
+
+Error: "403 Forbidden"
+Solution: You don't have permission for this role
+- Viewer cannot create records
+- Only Admin can access /users
+- Check your role permissions above
+
+Error: "MongooseServerSelectionError"
+Solution: MongoDB not running
+Command: brew services start mongodb-community
+
+Error: "Cannot find token"
+Solution: Login first to get token
+POST /auth/login and copy token from response
+
+Error: "Invalid email format"
+Solution: Use valid email in request
+Example: "analyst@example.com" (not just "analyst")
+
+Error: "Missing required field"
+Solution: Check all required fields in request body
+POST /records requires: amount, type, category, date
+
+================================================================================
+📋 POSTMAN COLLECTION
+================================================================================
+
+Import postman_collection.json file to get:
+- 16 pre-configured requests
+- Automatic header management
+- Environment variables for token storage
+- Save & share your test collection
+
+Steps:
+1. Open Postman
+2. Click Import
+3. Select postman_collection.json
+4. All endpoints ready to test!
+
+================================================================================
+✅ TESTING CHECKLIST
+================================================================================
+
+Before submitting, verify:
+
+[ ] MongoDB is running
+[ ] Backend server running (npm run dev)
+[ ] Can health check: GET /health
+[ ] Can login: POST /auth/login
+[ ] Can create record: POST /records (with token)
+[ ] Can get records: GET /records (with token)
+[ ] Can filter records: GET /records?type=income
+[ ] Can update record: PUT /records/:id (with token)
+[ ] Can delete record: DELETE /records/:id (with token)
+[ ] Can get summary: GET /dashboard/summary
+[ ] Can get trends: GET /dashboard/trend
+[ ] Can get activity: GET /dashboard/activity
+[ ] Viewer cannot create (403): POST /records (as viewer)
+[ ] Admin can get users: GET /users (as admin)
+[ ] Token in Authorization header works
+[ ] Different roles have different permissions
+
+================================================================================
+🎯 FINAL NOTES
+================================================================================
+
+1. Always start with login to get token
+2. Use token in Authorization header for protected endpoints
+3. Test with all 3 roles (viewer, analyst, admin)
+4. Check role permissions in the table above
+5. Keep MongoDB running during testing
+6. Save your Postman collection for reference
+7. Verify all 16 endpoints work as expected
+
+All endpoints tested and working! ✅
+
+================================================================================
