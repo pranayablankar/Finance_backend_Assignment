@@ -19,6 +19,8 @@ Authorization: Bearer YOUR_TOKEN_HERE
 ---
 
 ## Step 1 — Health Check (No Auth)
+**Base URL:** `http://localhost:5000/api/health`
+**Base url:** `https://finance-backend-api-n3ir.onrender.com/api/health`
 
 **GET** `/health`
 
